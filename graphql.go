@@ -65,7 +65,17 @@ func (c *Client) do(ctx context.Context, op operationType, v interface{}, variab
 	if err != nil {
 		return err
 	}
-	resp, err := ctxhttp.Post(ctx, c.httpClient, c.url, "application/json", &buf)
+
+	req, err := http.NewRequest("POST", c.url, &buf)
+	if err != nil {
+		return err
+	}
+	authToken := ctx.Value("token")
+	if authToken != nil {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %v", authToken))
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := ctxhttp.Do(ctx, c.httpClient, req)
 	if err != nil {
 		return err
 	}
